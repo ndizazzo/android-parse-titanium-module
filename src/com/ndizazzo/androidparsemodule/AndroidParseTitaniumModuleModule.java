@@ -21,9 +21,6 @@ public class AndroidParseTitaniumModuleModule extends KrollModule
 	// Standard Debugging variables
 	private static final String TAG = "AndroidParseTitaniumModuleModule";
 
-	// You can define constants with @Kroll.constant, for example:
-	// @Kroll.constant public static final String EXTERNAL_NAME = value;
-	
 	public AndroidParseTitaniumModuleModule()
 	{
 		super();
@@ -32,31 +29,42 @@ public class AndroidParseTitaniumModuleModule extends KrollModule
 	@Kroll.onAppCreate
 	public static void onAppCreate(TiApplication app)
 	{
-		Log.d(TAG, "inside onAppCreate");
+		//Log.d(TAG, "inside onAppCreate");
 		// put module init code that needs to run when the application is created
 	}
 
-	// Methods
 	@Kroll.method
-	public String example()
+	public void initParse(Object[] initArgs)
 	{
-		Log.d(TAG, "example called");
-		return "hello world";
+		Log.d("initParse called");
+		// Verify appId
+		// Verify clientKey
 	}
-	
-	// Properties
-	@Kroll.getProperty
-	public String getExampleProp()
+
+	@Kroll.method
+	public void findObjects(String objectName, Object[] conditions, KrollFunction callback)
 	{
-		Log.d(TAG, "get example property");
-		return "hello world";
+		Log.d("findObjects called");
+		// parameter object name
+		// parameter condition array
+		// parameter callback
 	}
-	
-	
-	@Kroll.setProperty
-	public void setExampleProp(String value) {
-		Log.d(TAG, "set example property: " + value);
+
+	@Kroll.method
+	public void registerForPush(String deviceToken, String channelName, KrollFunction callback)
+	{
+		Log.d("registerForPush called");
+		// parameter deviceToken
+		// parameter channel name
+		// parameter callback
+	}
+
+	@Kroll.method
+	public void unsubscribeFromPush(String channelName, KrollFunction callback)
+	{
+		Log.d("unsubscribeFromPush called");
+		// parameter channel name
+		// parameter callback
 	}
 
 }
-
