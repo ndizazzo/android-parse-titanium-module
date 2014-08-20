@@ -1,132 +1,143 @@
-# Titanium module for Parse.com Android SDK
+# Parse.com Titanium Module for Android
 
-## Purpose
+## About the Module
 
-This module exists to provide Appcelerator users with a *free* Android module to wrap functionality of the Android Parse SDK.
+This module exists to provide Appcelerator developers with an **open source** (licensed under the MIT license) Android module to wrap functionality of the Android Parse SDK.
 
 It attempts to maintain call compatibility with the iOS Titanium Module to avoid applications from having a vastly different code structure.
 
+Right now the number of supported features is limited, but I hope to develop more features over time as well as manage contributions from others.
+
 The long term goal is to combine both modules once functionality is sufficient, avoiding the need for two separate modules.
+
+## SDK Compatibility
+
+**Current Android SDK version:** 1.5.1
+
+### Supported
+
+* Remote Data Objects
+ * Create
+ * Find
+ * Update
+ * Delete
+
+### Currently Unsupported
+
+* Local Data Objects
+* Analytics
+* Users
+* Access Control Lists
+* Files
+* Push Subscriptions
+* Cloud Functions
+* Facebook / Twitter integration
+* GeoPoints
 
 ## Usage
 
-### Initialization
+The sections below outline each of the major (and currently supported) methods in the Android Parse module.
 
-    var parse = require('com.ndizazzo.androidparsemodule');
+#### Initialization
+
+    var parse = require('com.ndizazzo.parsemodule');
     parse.initParse({
       appId: 'YOUR PARSE APP ID',
       clientKey: 'YOUR PARSE CLIENT KEY'
     });
 
-### Parse Data Objects
+### Data Objects
+
+#### Parse Data Objects
 
 Create a new data object in the class of 'Game':
 
-    parse.createObject('Game', {
-      name: 'My first game',
-      level: 1
+    parse.createObject('Song', {
+      title: 'a song name',
+      artist: 'an artist name',
+      album: 'an album name',
+      playTimeSeconds: 335
     }, function(data) {
        if(data.error) {
           // error happened
        } else {
-          // use data.object -- it is just plain JSON
+          // data.object contains all the fields you provided to the module
        }
     });
 
-### Update an object
+**NOTE:** You might need to enable 'client class creation' in your application settings in order for the SDK to create the object if the class doesn't already exist. Otherwise, add it yourself using the Data Browser.
 
+#### Find an object
 
-    // NOTE: obj must have been retrieved from parse module (and later modified).
-    parse.updateObject(obj, function(data) {
-      if(data.error) {
+You can provide an array of conditions to find objects. For example:
 
-      } else {
-        // worked!
-      }
+    // Specifying _Classname targets the in-built classes of Parse.  If you want to specify your own class, no need for the _.
+    parse.createObject('Song', {
+      title: 'Octavarium',
+      artist: 'Dream Theater',
+      album: 'Octavarium',
+      playTimeSeconds: 1440
+    }, function(data) {
+       if(data.error) {
+          // error happened
+          Ti.API.error(data.error);
+       } else {
+          // data.object contains all the fields you provided to the module
+       }
     });
 
-### Find an object
+You can also use multiple conditions and control result ordering:
 
-I think this is pretty cool.  You can pass in an array of conditions in which to find them.  For example:
-
-    // specifying _User targets the 'User' class in Parse.  If you want to specify your own class, no need for the _.
-    parse.findObjects('_User', [
-      {key: 'email', condition: '==', value: 'someemail@someemail.com'}
-    ], function(data) {
-      if(data.error) {
-        // error, probably with connection
-        return;
-      }
-
-      if(data.results.length > 0) { // found some results!
-
-      }
-    });
-
-You can also do multiple conditions:
-
-    parse.findObjects('Game', [
-      {key: 'level', condition: '>=', value: 1},
-      {key: 'level', condition: '<=', value: 5},
-      {key: 'status', condition: '==', value: 'live'},
-      {key: 'position', condition: 'orderby', value: 'asc'}
+    parse.findObjects('Song', [
+      { key: 'playTimeSeconds', condition: '>=', value: 600 },
+      { key: 'artist', condition: '==', value: 'Dream Theater' },
+      { key: 'artist', condition: 'orderby', value: 'desc' }
     ], function(data) {  ... });
 
-### Save All Objects
+#### Update an object
 
-    // for example, this one starts with findObjects
-    parse.findObjects('Test', [], function(data) {
-      var objectArray = data.results;
+**NOTE:** Below, the parse object must first be retrieved from the module (and later modified).
 
-      // assuming there are at least 2 objects in the array
-      objectArray[0].key = 'Another value';
-      objectArray[1].key = 'Yet another value';
+    var firstObject = null;
+    parse.findObjects('Song', [{key: 'artist', condition: '==', value: 'Dream Theater'}], function(data) {
+      if (data.error) {
+        // Handle problems here
+      }
+      else {
+        if (data.results.length > 0) {
+          firstObject = data.results[0];
+        }
+      }
 
-      // now you can save them all at the same time here
-      parse.saveAllObjects(objectArray, function(data) {
-        if(data.success) { // yay!
+      // Here we modify it
+      firstObject.title = "Illumination Theory";
+      firstObject.album = "Dream Theater";
 
+      // Now we can update it
+      parse.updateObject(firstObject, function(data) {
+        if(data.error) {
+          // It didn't work :(
+        } else {
+          // It worked! :D
         }
       });
     });
 
-## Push Notifications
+The object must first be retrieved from the Parse module because fields like `_className`, `_objectId`, `_createdAt`, and `_updatedAt` *must* be set in order for the module to properly work with it.
 
-To register for push notifications unique token should first be retrieved from the device.
+#### Delete an Object
 
-    Ti.Network.registerForPushNotifications({
-      callback: function pushCallback(e)
-      {
-        // Handle receiving of push notifications
-      },
-      success: function pushSuccess(e)
-      {
-        deviceToken = e.deviceToken;
-        // Store device token for use later
-      },
-      error: function pushError(e)
-      {
-        // If unable to get deviceToken check for errors here
-        // alert('Error!: '+JSON.stringify(e));
-      },
-      types: [
-        Ti.Network.NOTIFICATION_TYPE_BADGE,
-        Ti.Network.NOTIFICATION_TYPE_ALERT,
-        Ti.Network.NOTIFICATION_TYPE_SOUND
-      ]
+Deleting an object is fairly straightforward, pass in the class name and the object id:
+
+    parse.deleteObject("Song", "<the object id>", function(result) {
+      if (result.success) {
+        console.log("Delete worked!");
+      }
+      else {
+        // Nope
+      }
     });
 
-### Subscribing to a channel
+## Credits
 
-To register for a push channel, you must provide the device token, the name of the channel, and a callback that handles the result of the call.
-
-    parse.registerForPush(deviceToken, 'sampleChannel', function(data) {
-      // output some data to check for success / errors
-      // alert(data);
-    });
-
-### Unsubscribing from a channel
-
-  parse.unsubscribeFromPush('sampleChannel', function(data) {
-    // alert(data);
-  });
+I want to shout out [ewindso](http://github.com/ewindso) for [his iOS Parse module](https://github.com/ewindso/ios-parse-titanium-module). If you need support for both iOS and Android, you should be able to combine the two with minimal impact. This module's interface is modelled after it in order to keep your application fairly straightforward and simple.
