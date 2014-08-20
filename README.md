@@ -34,6 +34,18 @@ The long term goal is to combine both modules once functionality is sufficient, 
 * Facebook / Twitter integration
 * GeoPoints
 
+## Building
+
+The Appcelerator module creation documentation provides instructions on how to build for your platform / environment. You can find the [module build documentation here](http://docs.appcelerator.com/titanium/3.0/#!/guide/Android_Module_Development_Guide-section-29004945_AndroidModuleDevelopmentGuide-Building).
+
+Once the module is built, you can install it manually by unpacking the newly created zipfile in your application's `modules` directory, and adding:
+
+    <module platform="android">com.ndizazzo.parsemodule</module>
+
+to your `tiapp.xml` file under the `<modules>` section.
+
+Alternatively, you can install the module through the Studio via the properties page for the `tiapp.xml` file.
+
 ## Usage
 
 The sections below outline each of the major (and currently supported) methods in the Android Parse module.
