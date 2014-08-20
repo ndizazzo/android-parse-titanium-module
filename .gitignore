@@ -5,3 +5,5 @@ build
 .apt_generated
 
 .DS_Store
+dist/
+libs/
