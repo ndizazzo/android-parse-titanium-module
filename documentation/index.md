@@ -8,7 +8,7 @@ TODO: Enter your module description here
 
 To access this module from JavaScript, you would do the following:
 
-	var android-parse-titanium-module = require("com.ndizazzo.androidparsemodule");
+	var android-parse-titanium-module = require("com.ndizazzo.parsemodule");
 
 The android-parse-titanium-module variable is a reference to the Module object.	
 

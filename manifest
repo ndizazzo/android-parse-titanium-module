@@ -2,7 +2,7 @@
 # this is your module manifest and used by Titanium
 # during compilation, packaging, distribution, etc.
 #
-version: 1.0.0
+version: 0.1.0
 apiversion: 2
 description: A Titanium module for the Parse.com Android SDK
 author: Nick DiZazzo
@@ -32,7 +32,7 @@ copyright: Nick DiZazzo
 
 # these should not be edited
 name: android-parse-titanium-module
-moduleid: com.ndizazzo.androidparsemodule
+moduleid: com.ndizazzo.parsemodule
 guid: a2c48aaa-6f32-4862-bfef-8a76653b6007
 platform: android
 minsdk: 3.2.3.GA
