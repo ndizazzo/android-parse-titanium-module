@@ -16,11 +16,7 @@ The long term goal is to combine both modules once functionality is sufficient, 
 
 ### Supported
 
-* Remote Data Objects
- * Create
- * Find
- * Update
- * Delete
+* Remote Data Objects (CRUD)
 
 ### Currently Unsupported
 
@@ -62,7 +58,7 @@ The sections below outline each of the major (and currently supported) methods i
 
 #### Parse Data Objects
 
-Create a new data object in the class of 'Game':
+Create a new data object in the class of 'Song':
 
     parse.createObject('Song', {
       title: 'a song name',
@@ -152,4 +148,4 @@ Deleting an object is fairly straightforward, pass in the class name and the obj
 
 ## Credits
 
-I want to shout out [ewindso](http://github.com/ewindso) for [his iOS Parse module](https://github.com/ewindso/ios-parse-titanium-module). If you need support for both iOS and Android, you should be able to combine the two with minimal impact. This module's interface is modelled after it in order to keep your application fairly straightforward and simple.
+I want to shout out [ewindso](http://github.com/ewindso) for [his iOS Parse module](https://github.com/ewindso/ios-parse-titanium-module). This module's interface is modelled after his in order to keep your application straightforward (no platform-specific code aside from initialization), and his module defines a clear interface to the Parse SDK.
