@@ -101,3 +101,19 @@ parse.findObjects('Song', [{key: 'artist', condition: '==', value: 'Dream Theate
     }
   }
 });
+
+
+parse.registerForPush("dummyToken", "Metal", function(data) {
+  // data.success is true / false, if the channel name is valid or not
+  console.log(data);
+});
+
+parse.unsubscribeFromPush("Metal", function(data) {
+  // data.success is true / false, if the channel name is valid or not
+  console.log(data);
+});
+
+parse.pushChannelList(function(data) {
+  // Channel names are stored in data.channels
+  console.log(data);
+});

@@ -37,10 +37,16 @@ import com.parse.SaveCallback;
 import com.parse.DeleteCallback;
 import com.parse.ParseQuery;
 import com.parse.ParseException;
+import com.parse.PushService;
+import com.parse.ParseAnalytics;
+import com.parse.ParseInstallation;
 
 import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.kroll.KrollFunction;
 import org.appcelerator.kroll.common.Log;
+
+import android.app.Activity;
+import android.content.Context;
 
 public class ParseSingleton {
   private static final String TAG = "ParseSingleton";
@@ -67,6 +73,9 @@ public class ParseSingleton {
 
     if (!initialized) {
       Parse.initialize(appContext, appId, clientKey);
+
+      EnablePush();
+
       initialized = true;
     }
     else
@@ -164,5 +173,46 @@ public class ParseSingleton {
     }
 
     return map;
+  }
+
+  public void EnablePush() {
+		// Get application context / activity to tell Parse what to dispatch to
+    Context appContext = TiApplication.getInstance().getApplicationContext();
+    Activity appActivity = TiApplication.getAppRootOrCurrentActivity();
+
+    // Set the default callback / handler for push notifications
+    PushService.setDefaultPushCallback(appContext, appActivity.getClass());
+
+    // Parse requires you to save the installation which contains the deviceToken for GCM
+		ParseInstallation.getCurrentInstallation().saveInBackground();
+
+		// Track Push opens
+		ParseAnalytics.trackAppOpened(TiApplication.getAppRootOrCurrentActivity().getIntent());
+  }
+
+  public boolean ValidChannelName(String channelName) {
+    if (channelName.matches("^[a-zA-Z].[a-zA-Z0-9_-]*$")) {
+      return true;
+    }
+    else {
+      return false;
+    }
+  }
+
+  public void SubscribeToPushChannel(String channelName) {
+    // No need for custom activities - we want to dispatch directly to the Titanium application.
+    Context appContext = TiApplication.getInstance().getApplicationContext();
+    Activity activity = TiApplication.getAppRootOrCurrentActivity();
+    PushService.subscribe(appContext, channelName, activity.getClass());
+  }
+
+  public void UnsubscribeFromPushChannel(String channelName) {
+    Context appContext = TiApplication.getInstance().getApplicationContext();
+    PushService.unsubscribe(appContext, channelName);
+  }
+
+  public Set<String> ChannelSubscriptionList() {
+    Context appContext = TiApplication.getInstance().getApplicationContext();
+    return PushService.getSubscriptions(appContext);
   }
 }
