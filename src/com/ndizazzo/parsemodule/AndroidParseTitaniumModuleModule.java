@@ -11,6 +11,7 @@ package com.ndizazzo.parsemodule;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 import com.parse.Parse;
 import com.parse.ParseObject;
@@ -161,5 +162,60 @@ public class AndroidParseTitaniumModuleModule extends KrollModule {
 		};
 
 		parseSingleton.DeleteDataObject(className, objectId, parseCallback);
+	}
+
+	@Kroll.method
+	public void registerForPush(String deviceToken, String channelName, KrollFunction applicationCallback) {
+
+		// NOTE: deviceToken is not used, but in order to maintain call
+		// compatibility with the iOS module, I'm leaving it as a parameter
+		HashMap results = new HashMap();
+
+		// The channel name can only match letters, numbers, dashes and underscores, and must start with a letter
+		if (parseSingleton.ValidChannelName(channelName)) {
+			parseSingleton.SubscribeToPushChannel(channelName);
+			results.put("success", true);
+		}
+		else {
+			// Invalid channel name
+			results.put("success", false);
+		}
+
+		applicationCallback.callAsync(getKrollObject(), results);
+	}
+
+	@Kroll.method
+	public void unsubscribeFromPush(String channelName, KrollFunction applicationCallback) {
+
+		HashMap results = new HashMap();
+
+		if (parseSingleton.ValidChannelName(channelName)) {
+			parseSingleton.UnsubscribeFromPushChannel(channelName);
+			results.put("success", true);
+		}
+		else {
+			results.put("success", false);
+		}
+
+		applicationCallback.callAsync(getKrollObject(), results);
+	}
+
+	@Kroll.method
+	public void pushChannelList(KrollFunction applicationCallback) {
+		HashMap results = new HashMap();
+
+		Set<String> channelList = parseSingleton.ChannelSubscriptionList();
+		String[] channels = new String[channelList.size()];
+
+		int count = 0;
+		for (String channelName : channelList) {
+			channels[count] = channelName;
+			++count;
+		}
+
+		// Store the resulting string list under the 'channels' field for the Titanium App
+		results.put("channels", channels);
+
+		applicationCallback.callAsync(getKrollObject(), results);
 	}
 }

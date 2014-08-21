@@ -10,6 +10,13 @@ Right now the number of supported features is limited, but I hope to develop mor
 
 The long term goal is to combine both modules once functionality is sufficient, avoiding the need for two separate modules.
 
+## Quick Start
+
+### Get it [![gitTio](http://gitt.io/badge.png)](http://gitt.io/component/dk.napp.drawer)
+Download the latest distribution ZIP-file and consult the [Titanium Documentation](http://docs.appcelerator.com/titanium/latest/#!/guide/Using_a_Module) on how install it, or simply use the [gitTio CLI](http://gitt.io/cli):
+
+`$ gittio install com.ndizazzo.parsemodule`
+
 ## SDK Compatibility
 
 **Current Android SDK version:** 1.5.1
@@ -17,6 +24,7 @@ The long term goal is to combine both modules once functionality is sufficient, 
 ### Supported
 
 * Remote Data Objects (CRUD)
+* Push Subscriptions
 
 ### Currently Unsupported
 
@@ -25,7 +33,6 @@ The long term goal is to combine both modules once functionality is sufficient, 
 * Users
 * Access Control Lists
 * Files
-* Push Subscriptions
 * Cloud Functions
 * Facebook / Twitter integration
 * GeoPoints
@@ -144,6 +151,33 @@ Deleting an object is fairly straightforward, pass in the class name and the obj
       else {
         // Nope
       }
+    });
+
+### Push Service
+
+The Parse Push Service allows your app to receive push notifications from GCM or PPNS.
+
+#### Subscribing to a Channel
+
+**NOTE:** The first parameter in the call below is for a device token, but is unused on Android. This is to maintain call compatibility with the iOS module.
+
+    Parse.registerForPush("dummyToken", "PushChannel", function(data) {
+      // data.success is true / false, if the channel name is valid or not
+      console.log(data);
+    });
+
+#### Unsubscribing from a Channel
+
+    Parse.unsubscribeFromPush("PushChannel", function(data) {
+      // data.success is true / false, if the channel name is valid or not
+      console.log(data);
+    });
+
+#### Channel List
+
+    Parse.pushChannelList(function(data) {
+      // Channel names are stored in data.channels
+      console.log(data);
     });
 
 ## Credits
