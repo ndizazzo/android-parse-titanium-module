@@ -8,7 +8,6 @@
 */
 package com.ndizazzo.parsemodule;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
@@ -76,18 +75,25 @@ public class AndroidParseTitaniumModuleModule extends KrollModule {
 
 				// General hash map to invoke the Titanium method with
 				HashMap returnMap = new HashMap();
-				HashMap[] resultObjects = new HashMap[objects.size()];
+				if (objects != null && objects.size() > 0) {
+					HashMap[] resultObjects = new HashMap[objects.size()];
 
-				if (e == null) {
-					int count = 0;
-					for (ParseObject po : objects) {
-						// Convert each object to a hash map to retain it's key/value properties
-						HashMap objectMap = parseSingleton.ConvertPOToHashMap(po);
-						resultObjects[count] = objectMap;
-						++count;
+					if (e == null) {
+						int count = 0;
+						for (ParseObject po : objects) {
+							// Convert each object to a hash map to retain it's key/value properties
+							HashMap objectMap = ParseDataConversions.ObjectToHashMap(po);
+							resultObjects[count] = objectMap;
+							++count;
+						}
+
+						returnMap.put("results", resultObjects);
+					}
+					else {
+						// no objects were returned,
+						returnMap.put("results", null);
 					}
 
-					returnMap.put("results", resultObjects);
 				}
 				else {
 					returnMap.put("error", e.toString());
@@ -125,11 +131,11 @@ public class AndroidParseTitaniumModuleModule extends KrollModule {
 
 	@Kroll.method
 	public void updateObject(final HashMap data, final KrollFunction applicationCallback) {
-		final ParseObject convertedObject = (ParseObject)parseSingleton.ConvertToParseObjectIfNecessary(data);
+		final ParseObject convertedObject = (ParseObject)ParseDataConversions.ConvertToParseObjectIfNecessary(data);
 		SaveCallback parseCallback = new SaveCallback() {
 			public void done(ParseException e) {
 				HashMap result = new HashMap();
-				HashMap returnObject = parseSingleton.ConvertPOToHashMap(convertedObject);
+				HashMap returnObject = ParseDataConversions.ObjectToHashMap(convertedObject);
 				if (e == null) {
 					result.put("object", returnObject);
 				} else {

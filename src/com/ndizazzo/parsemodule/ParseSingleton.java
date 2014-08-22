@@ -26,6 +26,7 @@ SOFTWARE.
 
 package com.ndizazzo.parsemodule;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -40,6 +41,9 @@ import com.parse.ParseException;
 import com.parse.PushService;
 import com.parse.ParseAnalytics;
 import com.parse.ParseInstallation;
+import com.parse.ParseRelation;
+import com.parse.ParseGeoPoint;
+import com.parse.ParseFile;
 
 import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.kroll.KrollFunction;
@@ -96,7 +100,7 @@ public class ParseSingleton {
     for (Map.Entry<Object, Object> item : keyValuePairs) {
       String key = (String)item.getKey();
       Object value = item.getValue();
-      dataObject.put(key, ConvertToParseObjectIfNecessary(value));
+      dataObject.put(key, ParseDataConversions.ConvertToParseObjectIfNecessary(value));
     }
 
     dataObject.saveInBackground(callback);
@@ -111,68 +115,6 @@ public class ParseSingleton {
   public void DeleteDataObject(String className, String objectId, DeleteCallback callback) {
     ParseObject object = ParseObject.createWithoutData(className, objectId);
     object.deleteInBackground(callback);
-  }
-
-  private static boolean IsParseObject(Object parseObject) {
-    if (parseObject instanceof HashMap) {
-      HashMap hashMap = (HashMap)parseObject;
-      if (hashMap != null && hashMap.containsKey("_objectId") && hashMap.containsKey("_className")) {
-        return true;
-      }
-    }
-
-    return false;
-  }
-
-  public static Object ConvertToParseObjectIfNecessary(Object object) {
-    if (IsParseObject(object)) {
-      HashMap map = (HashMap)object;
-      String objectID = (String)map.get("_objectId");
-      String className = (String)map.get("_className");
-
-      if (className != null && className.length() > 0 && objectID != null && objectID.length() > 0) {
-        ParseObject parseObject = ParseObject.createWithoutData(className, objectID);
-        Set<String> keySet = map.keySet();
-        for (String key : keySet) {
-          // Ignore the keys we don't need to set (ACL is currently unsupported)
-          if (key.equals("_createdAt") || key.equals("_updatedAt") || key.equals("_ACL") ||
-              key.equals("_objectId") || key.equals("_className")) {
-            continue;
-          }
-
-          // Check if its a nested hash map. This only converts the original
-          // object to a parse object if it requires conversion, otherwise it just
-          // returns the original value
-          Object mapValue = map.get(key);
-          parseObject.put(key, ConvertToParseObjectIfNecessary(mapValue));
-        }
-
-        return parseObject;
-      }
-    }
-
-    return object;
-  }
-
-  public static HashMap ConvertPOToHashMap(ParseObject parseObject) {
-    HashMap map = new HashMap();
-
-    if (parseObject != null) {
-      Set<String> keySet = parseObject.keySet();
-
-      for (String key : keySet) {
-        Object value = parseObject.get(key);
-        map.put(key, value);
-      }
-
-      // Remember class name, object IDs, created and updated dates
-      map.put("_className", parseObject.getClassName());
-      map.put("_objectId", parseObject.getObjectId());
-      map.put("_createdAt", parseObject.getCreatedAt());
-      map.put("_updatedAt", parseObject.getUpdatedAt());
-    }
-
-    return map;
   }
 
   public void EnablePush() {
