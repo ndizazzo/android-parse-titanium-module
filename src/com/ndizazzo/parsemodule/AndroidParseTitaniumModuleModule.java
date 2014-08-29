@@ -96,7 +96,11 @@ public class AndroidParseTitaniumModuleModule extends KrollModule {
 
 				}
 				else {
-					returnMap.put("error", e.toString());
+					String errorMessage = "No objects found.";
+					if (e != null) {
+						errorMessage = e.toString();
+					}
+					returnMap.put("error", errorMessage);
 				}
 
 				applicationCallback.callAsync(getKrollObject(), returnMap);
