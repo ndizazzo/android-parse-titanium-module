@@ -51,6 +51,7 @@ import org.appcelerator.kroll.common.Log;
 
 import android.app.Activity;
 import android.content.Context;
+import android.provider.Settings.Secure;
 
 public class ParseSingleton {
   private static final String TAG = "ParseSingleton";
@@ -79,6 +80,9 @@ public class ParseSingleton {
       Parse.initialize(appContext, appId, clientKey);
 
       EnablePush();
+
+      // Track Push opens
+      ParseAnalytics.trackAppOpened(TiApplication.getAppRootOrCurrentActivity().getIntent());
 
       initialized = true;
     }
@@ -119,17 +123,17 @@ public class ParseSingleton {
 
   public void EnablePush() {
 		// Get application context / activity to tell Parse what to dispatch to
-    Context appContext = TiApplication.getInstance().getApplicationContext();
-    Activity appActivity = TiApplication.getAppRootOrCurrentActivity();
+    final Context appContext = TiApplication.getInstance().getApplicationContext();
+    final Activity appActivity = TiApplication.getAppRootOrCurrentActivity();
 
     // Set the default callback / handler for push notifications
-    PushService.setDefaultPushCallback(appContext, appActivity.getClass());
-
     // Parse requires you to save the installation which contains the deviceToken for GCM
-		ParseInstallation.getCurrentInstallation().saveInBackground();
-
-		// Track Push opens
-		ParseAnalytics.trackAppOpened(TiApplication.getAppRootOrCurrentActivity().getIntent());
+    ParseInstallation.getCurrentInstallation().saveInBackground(new SaveCallback() {
+      @Override
+      public void done(ParseException e) {
+        PushService.setDefaultPushCallback(appContext, appActivity.getClass());
+      }
+    });
   }
 
   public boolean ValidChannelName(String channelName) {
