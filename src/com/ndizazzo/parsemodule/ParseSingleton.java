@@ -79,7 +79,12 @@ public class ParseSingleton {
     if (!initialized) {
       Parse.initialize(appContext, appId, clientKey);
 
-      EnablePush();
+      try {
+        EnablePush();
+      }
+      catch (Exception e) {
+        Log.e(TAG, e.toString());
+      }
 
       // Track Push opens
       ParseAnalytics.trackAppOpened(TiApplication.getAppRootOrCurrentActivity().getIntent());
@@ -131,7 +136,12 @@ public class ParseSingleton {
     ParseInstallation.getCurrentInstallation().saveInBackground(new SaveCallback() {
       @Override
       public void done(ParseException e) {
-        PushService.setDefaultPushCallback(appContext, appActivity.getClass());
+        if (e == null) {
+          PushService.setDefaultPushCallback(appContext, appActivity.getClass());
+        }
+        else {
+          Log.e(TAG, e.toString());
+        }
       }
     });
   }
