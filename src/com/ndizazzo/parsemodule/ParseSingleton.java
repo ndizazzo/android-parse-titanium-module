@@ -67,7 +67,7 @@ public class ParseSingleton {
     return instance;
   }
 
-  public void InitializeParse(String appId, String clientKey) {
+  public void InitializeParse(String appId, String clientKey, boolean alreadyInitialized) {
     // Grab the application context
     TiApplication appContext = TiApplication.getInstance();
     if (appContext == null) {
@@ -76,11 +76,13 @@ public class ParseSingleton {
     }
 
     if (!initialized) {
-      Parse.initialize(appContext, appId, clientKey);
+    	if (!alreadyInitialized) {
+    		Parse.initialize(appContext, appId, clientKey);
+    	}
 
-      EnablePush();
+    	EnablePush();
 
-      initialized = true;
+    	initialized = true;
     }
     else
     {

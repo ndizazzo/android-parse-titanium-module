@@ -27,11 +27,16 @@ import org.appcelerator.kroll.KrollFunction;
 
 import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.titanium.util.TiConvert;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
+import android.content.Context;
 
 @Kroll.module(name="AndroidParseTitaniumModule", id="com.ndizazzo.parsemodule")
 public class AndroidParseTitaniumModuleModule extends KrollModule {
-	ParseSingleton parseSingleton = null;
-
+	static ParseSingleton parseSingleton = ParseSingleton.Instance();
+   
+	static Context mContext = null;
+	
 	// Standard Debugging variables
 	private static final String TAG = "AndroidParseTitaniumModule";
 
@@ -41,13 +46,22 @@ public class AndroidParseTitaniumModuleModule extends KrollModule {
 
 	@Kroll.onAppCreate
 	public static void onAppCreate(TiApplication app) {
+		if (mContext==null) {mContext = app.getApplicationContext();}
+		SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(mContext);
+
+		String appId = p.getString("parseAppId", "");
+		String clientKey = p.getString("parseClientKey", "");
+		
+		if (!appId.equals("") && !clientKey.equals("")) {
+			Parse.initialize(app, appId, clientKey);
+		}
 	}
 
 	@Kroll.method
 	public void initParse(HashMap initOpts) {
 
 		// Store a reference to the parse singleton now that the app is ready
-		parseSingleton = ParseSingleton.Instance();
+		//parseSingleton = ParseSingleton.Instance();
 
 		if (initOpts != null) {
 			Log.d(TAG, "initParse called with parameters " + initOpts.toString());
@@ -63,8 +77,26 @@ public class AndroidParseTitaniumModuleModule extends KrollModule {
 				clientKey = (String)initOpts.get("clientKey");
 			}
 
-			// Invoke the Parse SDK Initialize method
-			parseSingleton.InitializeParse(appId, clientKey);
+		    // Save App ID and Client Key to shared preference
+			SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(mContext);
+            
+			String savedAppId = p.getString("parseAppId", "");
+			String savedClientKey = p.getString("parseClientKey", "");
+			
+			if (savedAppId.equals(appId) && savedClientKey.equals(clientKey)) {
+				// Invoke the Parse SDK Initialize method
+				parseSingleton.InitializeParse(appId, clientKey, true);
+			} else {
+				if (!savedClientKey.equals(appId)) {
+					p.edit().putString("parseAppId", appId).commit();
+				}
+				
+				if (!savedClientKey.equals(clientKey)) {
+					p.edit().putString("parseClientKey", clientKey).commit();
+				}
+				// Invoke the Parse SDK Initialize method
+				parseSingleton.InitializeParse(appId, clientKey, false);
+			}
 		}
 	}
 
