@@ -21,13 +21,11 @@ Download the latest distribution ZIP-file and consult the [Titanium Documentatio
 
 **Parse Android SDK version:** 1.7.1
 
-| Supported | Not Supported |
-|-----------|---------------|
-| Remote Data Objects | Local Data Objects| Cloud Functions |
-| Push Notifications | Analytics | Facebook |
-| Channel Subscriptions | Users | Twitter |
-| | ACLs | App Configuration |
-| | Files | GeoPoints |
+| Supported             | Not Supported      | Not Supported | Not Supported   |
+|-----------------------|--------------------|---------------|-----------------|
+| Remote Data Objects   | Local Data Objects | ACLs          | Cloud Functions |
+| Push Notifications    | Analytics          | Files         | Facebook        |
+| Channel Subscriptions | Users              | GeoPoints     | Twitter         |
 
 ## Building
 
