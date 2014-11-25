@@ -1,0 +1,9 @@
+titanium.path=/Users/ndizazzo/Library/Application Support/Titanium
+titanium.sdk=3.4.1.GA
+titanium.os=osx
+android.sdk=/Users/ndizazzo/dev/android-sdk
+android.ndk=/Users/ndizazzo/dev/android-ndk
+
+titanium.platform=${titanium.path}/mobilesdk/${titanium.os}/${titanium.sdk}/android
+android.platform=${android.sdk}/platforms/android-14
+google.apis=${android-sdk}/add-ons/addon-google_apis-google-14-1

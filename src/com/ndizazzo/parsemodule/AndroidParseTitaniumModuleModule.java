@@ -10,7 +10,6 @@ package com.ndizazzo.parsemodule;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
 
 import com.parse.Parse;
 import com.parse.ParseObject;
@@ -30,7 +29,7 @@ import org.appcelerator.titanium.util.TiConvert;
 
 @Kroll.module(name="AndroidParseTitaniumModule", id="com.ndizazzo.parsemodule")
 public class AndroidParseTitaniumModuleModule extends KrollModule {
-	ParseSingleton parseSingleton = null;
+	private static ParseSingleton parseSingleton = null;
 
 	// Standard Debugging variables
 	private static final String TAG = "AndroidParseTitaniumModule";
@@ -41,31 +40,25 @@ public class AndroidParseTitaniumModuleModule extends KrollModule {
 
 	@Kroll.onAppCreate
 	public static void onAppCreate(TiApplication app) {
+		// Store a reference to the parse singleton now that the app is ready
+		parseSingleton = ParseSingleton.Instance();
+
+		// Obtain the application and client keys from the tiapp.xml file.
+		// It must be stored there because of the way Android applications work,
+		// we can't initialize the module during runtime because the application is
+		// started when a push notification is received
+		String propertyAppId = app.getAppProperties().getString(ParseSingleton.PROPERTY_APP_ID, "");
+		String propertyClientKey = app.getAppProperties().getString(ParseSingleton.PROPERTY_CLIENT_KEY, "");
+
+		// Invoke the Parse SDK Initialize method
+		parseSingleton.InitializeParse(propertyAppId, propertyClientKey, app);
 	}
 
 	@Kroll.method
 	public void initParse(HashMap initOpts) {
-
-		// Store a reference to the parse singleton now that the app is ready
-		parseSingleton = ParseSingleton.Instance();
-
-		if (initOpts != null) {
-			Log.d(TAG, "initParse called with parameters " + initOpts.toString());
-
-			String appId = null;
-			String clientKey = null;
-
-			if (initOpts.containsKey("appId")) {
-				appId = (String)initOpts.get("appId");
-			}
-
-			if (initOpts.containsKey("clientKey")) {
-				clientKey = (String)initOpts.get("clientKey");
-			}
-
-			// Invoke the Parse SDK Initialize method
-			parseSingleton.InitializeParse(appId, clientKey);
-		}
+		// This method stub doesn't actually initialize parse - it should be already started when the application starts
+		// I'm putting this here so the application context is not null when the EnablePush method is run.
+		parseSingleton.EnablePush(TiApplication.getInstance());
 	}
 
 	@Kroll.method
@@ -96,7 +89,11 @@ public class AndroidParseTitaniumModuleModule extends KrollModule {
 
 				}
 				else {
-					returnMap.put("error", e.toString());
+					String errorMessage = "No objects found.";
+					if (e != null) {
+						errorMessage = e.toString();
+					}
+					returnMap.put("error", errorMessage);
 				}
 
 				applicationCallback.callAsync(getKrollObject(), returnMap);
@@ -210,7 +207,7 @@ public class AndroidParseTitaniumModuleModule extends KrollModule {
 	public void pushChannelList(KrollFunction applicationCallback) {
 		HashMap results = new HashMap();
 
-		Set<String> channelList = parseSingleton.ChannelSubscriptionList();
+		List<String> channelList = parseSingleton.ChannelSubscriptionList();
 		String[] channels = new String[channelList.size()];
 
 		int count = 0;
