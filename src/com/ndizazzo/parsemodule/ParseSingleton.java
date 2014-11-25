@@ -30,15 +30,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.List;
 
 import com.parse.Parse;
+import com.parse.ParsePush;
+import com.parse.PushService;
 import com.parse.ParseObject;
 import com.parse.FindCallback;
 import com.parse.SaveCallback;
 import com.parse.DeleteCallback;
 import com.parse.ParseQuery;
 import com.parse.ParseException;
-import com.parse.PushService;
 import com.parse.ParseAnalytics;
 import com.parse.ParseInstallation;
 import com.parse.ParseRelation;
@@ -58,6 +60,9 @@ public class ParseSingleton {
   private static ParseSingleton instance = null;
   private boolean initialized = false;
 
+  public static String PROPERTY_APP_ID = "Parse_AppId";
+  public static String PROPERTY_CLIENT_KEY = "Parse_ClientKey";
+
   protected ParseSingleton() {
   }
 
@@ -68,32 +73,50 @@ public class ParseSingleton {
     return instance;
   }
 
-  public void InitializeParse(String appId, String clientKey) {
-    // Grab the application context
-    TiApplication appContext = TiApplication.getInstance();
+  public void InitializeParse(String appId, String clientKey, TiApplication application) {
+    Context appContext = application.getApplicationContext();
+
     if (appContext == null) {
       Log.e(TAG, "Application context is null, cannot continue...");
       return;
     }
+    else if (appId != null && appId.isEmpty()) {
+      Log.e(TAG, "Application key is required! Parse has NOT been initialized.");
+      return;
+    }
+    else if (clientKey != null && clientKey.isEmpty()) {
+      Log.e(TAG, "Client key is required! Parse has NOT been initialized.");
+      return;
+    }
 
     if (!initialized) {
+      Log.d(TAG, "Initializing with: '" + appId + "' and '" + clientKey + "'.");
       Parse.initialize(appContext, appId, clientKey);
-
-      try {
-        EnablePush();
-      }
-      catch (Exception e) {
-        Log.e(TAG, e.toString());
-      }
-
-      // Track Push opens
-      ParseAnalytics.trackAppOpened(TiApplication.getAppRootOrCurrentActivity().getIntent());
 
       initialized = true;
     }
     else
     {
       Log.e(TAG, "Parse has already been initialized!");
+    }
+  }
+
+  public static void EnablePush(TiApplication app) {
+    Context appContext = app.getApplicationContext();
+    Activity appActivity = app.getAppCurrentActivity();
+
+    if (appContext == null) {
+      Log.e(TAG, "Application context is null, can't initialize Parse");
+      return;
+    }
+    else if (appActivity == null) {
+      Log.e(TAG, "Application activity is null, can't initialize Parse");
+      return;
+    }
+    else {
+      PushService.setDefaultPushCallback(appContext, appActivity.getClass());
+      ParseAnalytics.trackAppOpened(appActivity.getIntent());
+      ParseInstallation.getCurrentInstallation().saveInBackground();
     }
   }
 
@@ -126,26 +149,6 @@ public class ParseSingleton {
     object.deleteInBackground(callback);
   }
 
-  public void EnablePush() {
-		// Get application context / activity to tell Parse what to dispatch to
-    final Context appContext = TiApplication.getInstance().getApplicationContext();
-    final Activity appActivity = TiApplication.getAppRootOrCurrentActivity();
-
-    // Set the default callback / handler for push notifications
-    // Parse requires you to save the installation which contains the deviceToken for GCM
-    ParseInstallation.getCurrentInstallation().saveInBackground(new SaveCallback() {
-      @Override
-      public void done(ParseException e) {
-        if (e == null) {
-          PushService.setDefaultPushCallback(appContext, appActivity.getClass());
-        }
-        else {
-          Log.e(TAG, e.toString());
-        }
-      }
-    });
-  }
-
   public boolean ValidChannelName(String channelName) {
     if (channelName.matches("^[a-zA-Z].[a-zA-Z0-9_-]*$")) {
       return true;
@@ -156,19 +159,14 @@ public class ParseSingleton {
   }
 
   public void SubscribeToPushChannel(String channelName) {
-    // No need for custom activities - we want to dispatch directly to the Titanium application.
-    Context appContext = TiApplication.getInstance().getApplicationContext();
-    Activity activity = TiApplication.getAppRootOrCurrentActivity();
-    PushService.subscribe(appContext, channelName, activity.getClass());
+    ParsePush.subscribeInBackground(channelName);
   }
 
   public void UnsubscribeFromPushChannel(String channelName) {
-    Context appContext = TiApplication.getInstance().getApplicationContext();
-    PushService.unsubscribe(appContext, channelName);
+    ParsePush.unsubscribeInBackground(channelName);
   }
 
-  public Set<String> ChannelSubscriptionList() {
-    Context appContext = TiApplication.getInstance().getApplicationContext();
-    return PushService.getSubscriptions(appContext);
+  public List<String> ChannelSubscriptionList() {
+    return ParseInstallation.getCurrentInstallation().getList("channels");
   }
 }

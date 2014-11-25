@@ -1,6 +1,17 @@
 tmp
 bin
 build
-.apt_generated
+libs
+dist
+*.zip
+
+.classpath
+
+xcuserdata
+build.properties
+
+Thumbs.db
 .DS_Store
-libs/
+
+# Test app
+test/
