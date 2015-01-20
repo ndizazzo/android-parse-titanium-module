@@ -19,7 +19,7 @@ Download the latest distribution ZIP-file and consult the [Titanium Documentatio
 
 ## SDK-Module Compatibility
 
-**Parse Android SDK version:** 1.7.1
+**Parse Android SDK version:** 1.8.1
 
 | Supported             | Not Supported      | Not Supported | Not Supported   |
 |-----------------------|--------------------|---------------|-----------------|
